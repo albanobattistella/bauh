@@ -35,10 +35,13 @@ class UpdateCheck(QThread):
 
 class TrayIcon(QSystemTrayIcon):
 
-    def __init__(self, i18n: dict, manager: SoftwareManager, manage_window: ManageWindow, check_interval: int = 60, update_notification: bool = True):
+    def __init__(self, i18n: dict, manager: SoftwareManager, mwindow_args: dict, check_interval: int = 60,
+                 update_notification: bool = True, mwindow: ManageWindow = None):
         super(TrayIcon, self).__init__()
         self.i18n = i18n
         self.manager = manager
+        self.manage_window_args = mwindow_args
+        self.manage_window = mwindow
 
         self.icon_default = QIcon(os.getenv('BAUH_TRAY_DEFAULT_ICON_PATH', resource.get_path('img/logo.png')))
         self.icon_update = QIcon(os.getenv('BAUH_TRAY_UPDATES_ICON_PATH', resource.get_path('img/logo_update.png')))
@@ -69,8 +72,6 @@ class TrayIcon(QSystemTrayIcon):
 
         self.activated.connect(self.handle_click)
         self.set_default_tooltip()
-
-        self.manage_window = manage_window
 
     def set_default_tooltip(self):
         self.setToolTip('{} ({})'.format(self.i18n['manage_window.title'], __app_name__).lower())
@@ -132,9 +133,14 @@ class TrayIcon(QSystemTrayIcon):
             self.lock_notify.release()
 
     def show_manage_window(self):
-        if self.manage_window.isMinimized():
-            self.manage_window.setWindowState(Qt.WindowNoState)
-        elif not self.manage_window.isVisible():
+        if self.manage_window:
+            if self.manage_window.isMinimized():
+                self.manage_window.setWindowState(Qt.WindowNoState)
+            elif not self.manage_window.isVisible():
+                self.manage_window.refresh_apps()
+                self.manage_window.show()
+        else:
+            self.manage_window = ManageWindow(**self.manage_window_args, tray_icon=self)
             self.manage_window.refresh_apps()
             self.manage_window.show()
 

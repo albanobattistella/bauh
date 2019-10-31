@@ -62,32 +62,24 @@ def main():
     manager = GenericSoftwareManager(managers, context=context, app_args=args)
     manager.prepare()
 
-    manage_window = ManageWindow(i18n=i18n,
-                                 manager=manager,
-                                 icon_cache=icon_cache,
-                                 disk_cache=args.disk_cache,
-                                 download_icons=bool(args.download_icons),
-                                 screen_size=app.primaryScreen().size(),
-                                 suggestions=args.sugs,
-                                 display_limit=args.max_displayed,
-                                 config=user_config,
-                                 context=context,
-                                 http_client=http_client,
-                                 logger=logger,
-                                 notifications=bool(args.system_notifications))
+    mwindow_args = {'i18n': i18n, 'manager': manager, 'disk_cache': args.disk_cache,
+                    'download_icons': bool(args.download_icons), 'screen_size': app.primaryScreen().size(),
+                    'suggestions': args.sugs, 'display_limit': args.max_displayed, 'config': user_config,
+                    'context': context, 'http_client': http_client, 'logger': logger,
+                    'notifications': bool(args.system_notifications), 'icon_cache': icon_cache}
 
     if args.tray:
         tray_icon = TrayIcon(i18n=i18n,
                              manager=manager,
-                             manage_window=manage_window,
                              check_interval=args.check_interval,
+                             mwindow_args=mwindow_args,
                              update_notification=bool(args.system_notifications))
-        manage_window.set_tray_icon(tray_icon)
         tray_icon.show()
 
         if args.show_panel:
             tray_icon.show_manage_window()
     else:
+        manage_window = ManageWindow(**mwindow_args)
         manage_window.refresh_apps()
         manage_window.show()
 

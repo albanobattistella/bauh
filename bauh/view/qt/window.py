@@ -431,11 +431,8 @@ class ManageWindow(QWidget):
             self.table_apps.change_headers_policy(policy)
 
     def closeEvent(self, event):
-
         if self.tray_icon:
-            event.ignore()
-            self.hide()
-            self._handle_console_option(False)
+            self.tray_icon.manage_window = None
 
     def _handle_console(self, checked: bool):
 
